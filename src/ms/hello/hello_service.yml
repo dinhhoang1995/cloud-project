@@ -1,0 +1,48 @@
+---
+
+openapi: '3.0.0'
+info:
+  title: Hello service API
+  version: "0.1"
+
+paths:
+  /hello:
+    get:
+      operationId: hello_service.say_hello
+      summary: Say Hello
+      responses:
+        '200':
+          description: Return Hello
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+
+  /greeting/{firstname}:
+    get:
+      operationId: hello_service.say_greeting
+      summary: Say Greeting
+      parameters:
+        - name: firstname
+          in: path
+          description: firstname got from the path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Return Greeting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/message'
+
+components:
+  schemas:
+    message:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-photographer-deployment
+  labels:
+    app: photographer-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: photographer-service
+  template:
+    metadata:
+      labels:
+        app: photographer-service
+    spec:
+      containers:
+      - name: photographer-service
+        image: registry.cloud.rennes.enst-bretagne.fr:5000/photographer-service_03
+        ports:
+        - containerPort: 8090

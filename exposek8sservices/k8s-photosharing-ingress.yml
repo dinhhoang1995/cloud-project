@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: photosharing-ingress
+spec:
+  rules:
+  - host: photographer.api.photosharing.net
+    http:
+      paths:
+      - backend:
+          serviceName: photographer-service
+          servicePort: 8090
+  - host: photo.api.photosharing.net
+    http:
+      paths:
+      - backend:
+          serviceName: photo-service
+          servicePort: 8091

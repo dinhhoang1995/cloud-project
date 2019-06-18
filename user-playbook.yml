@@ -1,0 +1,14 @@
+---
+
+- hosts: all  
+
+  tasks:
+    - name: Some admin operations ...
+      block:
+        - user:
+            name: bob
+            group: admin
+            state: present
+      become: true
+      become_user: root
+

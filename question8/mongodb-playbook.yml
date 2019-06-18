@@ -1,0 +1,27 @@
+---
+- hosts: all
+  sudo: true
+  vars:
+    mongodb_version: 3.6.9
+  tasks:
+    - name: MongoDB | Import the public key used by the package management system
+      apt_key: keyserver=keyserver.ubuntu.com id=2930ADAE8CAF5059EE73BB4B58712A2291FA4AD5
+    - name: MongoDB | Create a list file
+      lineinfile: dest=/etc/apt/sources.list.d/mongodb-org-3.6.list line="deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse" state=present create=yes
+    - name: MongoDB | Install the packages
+      apt: name={{ item }}={{ mongodb_version }} state=present update_cache=yes
+      with_items:
+        - mongodb-org
+        - mongodb-org-server
+        - mongodb-org-shell
+        - mongodb-org-mongos
+        - mongodb-org-tools
+      notify:
+        - restart mongodb
+    - name: MongoDB | Listen to all interfaces
+      lineinfile: "dest=/etc/mongod.conf regexp='^  bindIp: 192.168.2.2' state=absent"
+      notify:
+        - restart mongodb
+  handlers:
+    - name: restart mongodb
+      service: name=mongod state=restarted

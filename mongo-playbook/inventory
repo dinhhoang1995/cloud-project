@@ -1,0 +1,11 @@
+[mongo_master]
+master ansible_host=192.168.2.3 mongodb_master=True # it is't a really master of MongoDB replica set,
+
+[mongo_replicas]
+replica1 ansible_host=192.168.2.4
+replica2 ansible_host=192.168.2.5
+
+
+[mongo:children]
+mongo_master
+mongo_replicas

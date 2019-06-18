@@ -1,0 +1,18 @@
+---
+
+- hosts: all
+  tasks:
+    - name: Install root CA certificates
+      become: true
+      get_url:
+        url: http://www.cloud.rennes.enst-bretagne.fr/root-ca.crt
+        dest: /usr/local/share/ca-certificates
+        mode: 755
+
+    - name: Run update-ca-certificates
+      become: true
+      command: update-ca-certificates
+
+    - name: Reboot the host
+      become: true
+      reboot:

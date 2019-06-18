@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-service
+  template:
+    metadata:
+      labels:
+        app: nginx-service
+    spec:
+      containers:
+      - name: nginx-service
+        image: registry.cloud.rennes.enst-bretagne.fr:5000/nginx-service_03:latest
+        ports:
+        - containerPort: 80

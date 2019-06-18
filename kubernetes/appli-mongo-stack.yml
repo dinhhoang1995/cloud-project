@@ -1,0 +1,126 @@
+heat_template_version: ocata
+
+description: template for 3 Mongo servers
+
+parameters:
+  key:
+    type: string
+    description: Key Name
+
+resources:
+  mongo1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.3
+
+  mongo1:
+    type: OS::Nova::Server
+    properties:
+      name: mongo1
+      image: ubuntu_16.04.latest
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: mongo1_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        apt-get install -y build-essential python-dev python-setuptools
+        export http_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        git clone https://github.com/mongodb/mongo-python-driver.git pymongo
+        cd pymongo; python setup.py install
+        reboot
+  
+  mongo2_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.4
+
+  mongo2:
+    type: OS::Nova::Server
+    properties:
+      name: mongo2
+      image: ubuntu_16.04.latest
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: mongo2_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        apt-get install -y build-essential python-dev python-setuptools
+        export http_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        git clone https://github.com/mongodb/mongo-python-driver.git pymongo
+        cd pymongo; python setup.py install
+        reboot
+
+  mongo3_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.5
+
+  mongo3:
+    type: OS::Nova::Server
+    properties:
+      name: mongo3
+      image: ubuntu_16.04.latest
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: mongo3_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        apt-get install -y build-essential python-dev python-setuptools
+        export http_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy-f2r114.enst-bretagne.fr:8080"
+        git clone https://github.com/mongodb/mongo-python-driver.git pymongo
+        cd pymongo; python setup.py install
+        reboot

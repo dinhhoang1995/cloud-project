@@ -1,0 +1,184 @@
+---
+
+openapi: '3.0.0'
+info:
+  title: Photographer service API
+  version: "0.1"
+
+paths:
+  /photographers:
+    post:
+      operationId: photographer_service.post_photographers
+      summary: Create a new photographer
+      requestBody:
+        description: photographer to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Photographer'
+      responses:
+        '201':
+          description: New photographer created
+        '409':
+          description: Photographer already exists with this display_name
+
+    get:
+      operationId: photographer_service.get_photographers
+      summary: Get all photographers
+      parameters:
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        '200':
+          description: Return photographers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photographers'
+
+  /photographer/{display_name}:
+    get:
+      operationId: photographer_service.get_photographer
+      summary: Get a single photographer.
+      parameters:
+        - in: path
+          name: display_name
+          required: true
+          schema:
+            $ref: '#/components/schemas/display_name'
+      responses:
+        200:
+          description: Return the requested photographer.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photographer_attributes'
+        404:
+          description: Photographer with this display_name does not exist.                
+
+    delete:
+      operationId: photographer_service.delete_photographer
+      summary: Remove a photographer.
+      parameters:
+        - in: path
+          name: display_name
+          required: true
+          schema:
+            $ref: '#/components/schemas/display_name'
+      responses:
+        204:
+          description: Photographer was deleted.
+        404:
+          description: Photographer with this display_name does not exist.
+
+    put:
+      operationId: photographer_service.put_photographer
+      summary: Update a single photographer.
+      parameters:
+        - in: path
+          name: display_name
+          required: true
+          schema:
+            $ref: '#/components/schemas/display_name'
+      requestBody:
+        description: photographer to add
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Photographer'
+      responses:
+        201:
+          description: New photographer created
+        404:
+          description: Photographer with this display_name does not exist.
+
+components:
+  schemas:
+    display_name:
+      type: string
+      minLength: 1
+      maxLength: 15
+      example: "rdoisneau"
+    
+    Photographer_display_name:
+      type: object
+      description: "The nickname of the photographer"
+      properties:
+        display_name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: "rdoisneau"
+      required:
+        - display_name
+
+    Photographer_attributes:
+      type: object
+      description: "The attributes of the photographer"
+      properties:
+        first_name:
+          type: string
+          description: "The first name of the photographer"
+          minLength: 1
+          maxLength: 25
+          example: "Robert"
+        last_name:
+          type: string
+          description: "The last name of the photographer"
+          minLength: 1
+          maxLength: 25
+          example: "Doisneau"
+        interests:
+          type: array
+          description: "The type of photos the photographer is interested in"
+          items:
+            type: string
+            minLength: 1
+            maxLength: 15
+          minLength: 1
+          example: ["street", "portrait"]
+      required:
+        - first_name
+        - last_name
+        - interests
+
+    Photographer:
+      description: "A photographer with a display name and some attributes"
+      allOf:
+        - $ref: '#/components/schemas/Photographer_display_name'
+        - $ref: '#/components/schemas/Photographer_attributes'
+
+    PhotographerDigest:
+      description: "A photographer with a display name, some attributes and a link"
+      allOf:
+        - $ref: '#/components/schemas/Photographer_display_name'
+        - type: object
+          description: "The link to a photographer"
+          properties:
+            link:
+              type: string
+          required:
+            - link
+
+    Photographers:
+      type: object
+      description: "An array of photographers and a boolean to indicate if there is more photographers"
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhotographerDigest'
+        has_more:
+          type: boolean

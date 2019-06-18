@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-photo-deployment
+  labels:
+    app: photo-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: photo-service
+  template:
+    metadata:
+      labels:
+        app: photo-service
+    spec:
+      containers:
+      - name: photo-service
+        image: registry.cloud.rennes.enst-bretagne.fr:5000/photo-service_03
+        ports:
+        - containerPort: 8091

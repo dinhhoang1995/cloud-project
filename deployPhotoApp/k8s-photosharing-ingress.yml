@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.kubernetes.io/cors-enable: "true"
+    ingress.kubernetes.io/cors-allow-origin: "*"
+    ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+    ingress.kubernetes.io/cors-allow-credentials: "true"
+    ingress.kubernetes.io/cors-allow-headers: "Location"
+    ingress.kubernetes.io/cors-expose-headers: "Location"
+    ingress.kubernetes.io/config-backend: |
+      rspadd Access-Control-Expose-Headers:\ Location
+
+  name: photosharing-ingress 
+spec:
+  rules:
+  - host: api.photosharing.net
+    http:
+      paths:
+      - backend:
+          serviceName: backend-service 
+          servicePort: 8070
+        path: /
+  - http:
+      paths:
+      - backend:
+          serviceName: nginx-service 
+          servicePort: 80
+        path: /
+

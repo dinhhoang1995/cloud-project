@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-webserver-deployment
+  labels:
+    app: webserver
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: test-webserver
+        image: registry.cloud.rennes.enst-bretagne.fr:5000/minikube_test_XX
+        ports:
+        - containerPort: 8000

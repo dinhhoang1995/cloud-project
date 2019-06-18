@@ -1,0 +1,151 @@
+heat_template_version: ocata
+
+description: template for 4 Kubernetes servers
+
+parameters:
+  key:
+    type: string
+    description: Key Name
+
+resources:
+  k8smaster_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ k8s_master_security_group, internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.6
+
+  k8smaster:
+    type: OS::Nova::Server
+    properties:
+      name: k8smaster
+      image: ubuntu_16.04.latest
+      flavor: s10.medium
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: k8smaster_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        reboot
+
+  k8sslave1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.7
+
+  k8sslave1:
+    type: OS::Nova::Server
+    properties:
+      name: k8sslave1
+      image: ubuntu_16.04.latest
+      flavor: s10.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: k8sslave1_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        reboot
+
+  k8sslave2_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.8
+
+  k8sslave2:
+    type: OS::Nova::Server
+    properties:
+      name: k8sslave2
+      image: ubuntu_16.04.latest
+      flavor: s10.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: k8sslave2_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        reboot
+
+  k8sslave3_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: private_net
+      security_groups: [ internal_security_group]
+      fixed_ips:
+        - subnet_id: private_subnet
+          ip_address: 192.168.2.9
+
+  k8sslave3:
+    type: OS::Nova::Server
+    properties:
+      name: k8sslave3
+      image: ubuntu_16.04.latest
+      flavor: s10.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: k8sslave3_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        apt-get -y upgrade
+        apt-get install -y python
+        reboot
+
+  floating_ip_k8s:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: external
+      port_id: { get_resource: k8smaster_port}

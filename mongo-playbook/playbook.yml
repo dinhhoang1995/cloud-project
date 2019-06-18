@@ -1,0 +1,110 @@
+
+---
+
+- hosts: mongo  
+
+  roles:
+    - { role: undergreen.mongodb, become: true }
+  vars:
+
+    mongodb_package: mongodb-org
+    mongodb_login_host: 192.168.2.3
+    mongodb_version: "3.6"
+
+    mongodb_pymongo_from_pip: false                   # Install latest PyMongo via PIP or package manager
+    mongodb_pymongo_pip_version: 3.6.1               # Choose PyMong version to install from pip. If not set use latest
+    mongodb_user_update_password: "on_create"        # MongoDB user password update default policy
+    mongodb_manage_service: true
+
+    mongodb_user: "{{ 'mongod' if ('RedHat' == ansible_os_family) else 'mongodb' }}"
+    mongodb_uid:
+    mongodb_gid:
+    mongodb_daemon_name: "{{ 'mongod' if ('mongodb-org' in mongodb_package) else 'mongodb' }}"
+    ## net Options
+    mongodb_net_bindip: 0.0.0.0                    # Comma separated list of ip addresses to listen on
+    mongodb_net_http_enabled: false                  # Enable http interface
+    mongodb_net_ipv6: false                          # Enable IPv6 support (disabled by default)
+    mongodb_net_maxconns: 65536                      # Max number of simultaneous connections
+    mongodb_net_port: 27017                          # Specify port number
+
+    ## processManagement Options
+    mongodb_processmanagement_fork: false            # Fork server process
+
+    ## security Options
+    # Disable or enable security. Possible values: 'disabled', 'enabled'
+    mongodb_security_authorization: "enabled"
+    mongodb_security_keyfile: /etc/mongodb-keyfile   # Specify path to keyfile with password for inter-process authentication
+
+    ## storage Options
+    mongodb_storage_dbpath: /data/db                 # Directory for datafiles
+    mongodb_storage_dirperdb: false                  # Use one directory per DB
+
+    # The storage engine for the mongod database. Available values:
+    # 'mmapv1', 'wiredTiger'
+    mongodb_storage_engine: "{{ 'mmapv1' if mongodb_version[0:3] == '3.0' else 'wiredTiger' }}"
+    # mmapv1 specific options
+    mongodb_storage_quota_enforced: false            # Limits each database to a certain number of files
+    mongodb_storage_quota_maxfiles: 8                # Number of quota files per DB
+    mongodb_storage_smallfiles: false                # Very useful for non-data nodes
+
+    mongodb_storage_journal_enabled: true            # Enable journaling
+    mongodb_storage_prealloc: true                   # Disable data file preallocation
+
+    ## systemLog Options
+    ## The destination to which MongoDB sends all log output. Specify either 'file' or 'syslog'.
+    ## If you specify 'file', you must also specify mongodb_systemlog_path.
+    mongodb_systemlog_destination: "file"
+    mongodb_systemlog_logappend: true                                        # Append to logpath instead of over-writing
+    mongodb_systemlog_path: /var/log/mongodb/{{ mongodb_daemon_name }}.log   # Log file to send write to instead of stdout
+
+    ## replication Options
+    mongodb_replication_replset: therep                # Enable replication <setname>[/<optionalseedhostlist>]
+    mongodb_replication_replindexprefetch: "all"      # specify index prefetching behavior (if secondary) [none|_id_only|all]
+    mongodb_replication_oplogsize: 1024               # specifies a maximum size in megabytes for the replication operation log
+    mongodb_replication_params:
+      - { host_name: 192.168.2.3, host_port: "{{ mongodb_net_port }}", host_type: replica }
+      - { host_name: 192.168.2.4, host_port: "{{ mongodb_net_port }}", host_type: replica }
+      - { host_name: 192.168.2.5, host_port: "{{ mongodb_net_port }}", host_type: replica }
+
+    ## setParameter options
+    # Configure setParameter option.
+    # Example :
+    mongodb_set_parameters: { "enableLocalhostAuthBypass": "true", "authenticationMechanisms": "SCRAM-SHA-1,MONGODB-CR" }
+
+    # Log rotation
+    mongodb_logrotate: true                             # Rotate mongodb logs.
+    mongodb_logrotate_options:
+      - compress
+      - copytruncate
+      - daily
+      - dateext
+      - rotate 7
+      - size 10M
+
+    # password for inter-process authentication
+    # please regenerate this file on production environment with command 'openssl rand -base64 741'
+    mongodb_keyfile_content: |
+      GHZKaLI8kYTCl5ZP5oLSNdxRXr6ir04NWPqXwkNDwnsmCRPgk1Dh2TUIZCmuDLmZ
+      MiQWyTW+WMmXSKvHkAmiYjfI7XuzrYvt+PA7oi04QybNDV8zodxKHCUjJX6AS0OP
+      6H6izsEauZ8QsTPONN24n3TOsJA2ldUQZEbr892HmLdzmFD0hK13/+88G5cu+781
+      iCb6VsxsLSlms6Vn8CI+St6AwysN4zRT9DVv/S188/afaZ40ja6BOPpWbqUJxGz/
+      WfnFv18043TcTmBIW8ZZ/a5t0tH0E9Wn4bD1bzPyjzK2+E6gz6Pc/1EFt/X3bPpz
+      POv49XMtJAeShAUYBhQYWV/JdTdp+t+VQO14zvNIEi9ZgBdHzeabKqyz10Wvs619
+      +153Cr1rbHw9NF298SWCdwpfHX0XDSzrLQf/daTTkOiu8emWpbBGgbMNlpJhcZyH
+      uhyB7hVrzDQLysb+uhGe3xbFXCwQVDK0Vb8oXaT12tFeX2Mlr0zopKBtPWLC2t3K
+      OEZjgkPWSRuFx0rL6T13jMzpthfKHunM48h1l0nuPlFLz5wmmCjha9zLmd2/bW9G
+      kSVoGa0WNtUuv6Bqd3ZjSsPYJCnBuec6eiyO1uLsiBgHnXUYbIRVSF8m1PtW4qrl
+      ZpEy1dYJWFfL10JUYKE+RPgllGftzaA5IsbaejUGXs/fMtgFBISWZeO2S0MZQMM6
+      QNBhxCehRs8JLSyWKpj1T51vKVHe5Kar7sUhcHNlpV1uRSClHscVHh/AbsRgkDjP
+      Tk3HB0iRAyiR3oK6KYmp1VFBgtdM81GtdCoEkyKe8NApwZ+HOeIYK9lhndPq5LJi
+      FIXOQ+C94ys0kxjkb/gsTWZn5vgbvDzFy0EHYhu/hVdTLOngseST7C2b8lgIybyb
+      f2BPs9OSh+8g7L2pb5Dno7SmzaOBjk0Jo5ARScahQOHGQLMYu9+Mau1sC8aMBhd9
+      +kpm8mESdLbY9aq+zB3G6JYCHEc/
+
+    # names and passwords for administrative users
+    mongodb_user_admin_name: siteUserAdmin
+    mongodb_user_admin_password: passw0rd
+
+    mongodb_root_admin_name: siteRootAdmin
+    mongodb_root_admin_password: passw0rd
+    
